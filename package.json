@@ -1,0 +1,26 @@
+{
+  "name": "openstore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AustynoChuks/openstore.git"
+  },
+  "keywords": [
+    "store",
+    "ecommerce"
+  ],
+  "author": "Ewurum Augustine Chukwudi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AustynoChuks/openstore/issues"
+  },
+  "homepage": "https://github.com/AustynoChuks/openstore#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
