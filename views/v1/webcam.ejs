@@ -1,0 +1,161 @@
+<html>
+    <head>
+        <title>Webcam</title>
+        <style type="text/css" rel="stylesheet">
+            body{
+                margin:0px;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="visibility:hidden;position: fixed;">
+            <video autoplay=true controls src="" id="vid"></video>
+            <canvas id="canvas2"></canvas>
+        </div>
+        <p id="movement">Moved!</p>
+        <canvas id="canvas1"></canvas>
+        
+    </body>
+    <script type="text/javascript">
+    var stream = null;
+    var detectedMovement = false;
+    lastDetectedTime = 0;
+    let moveElement = document.querySelector("#movement");
+    let data1 = null, data2 = null;
+    function reduceImagePixel(can, context, callback){
+        let imageData = context.getImageData(0, 0, can.width, can.height);
+        let data = imageData.data
+        let len = data.length;
+        for(let i=0; i<len; i+=4){
+            let avg = (data[i] + data[i+1] + data[i+2])/3;
+            avg = (i % 500 !== 0)?avg:255
+            data[i] = avg;
+            data[i+1] = avg;
+            data[i+2] = avg;
+        }
+        callback(imageData)
+    }
+
+    function compare(){
+        let d1 = data1, d2 = data2;
+        let len = d1.length
+        let numberOfPixelsDetected = 0
+        for(let i=0; i<len; i++){
+            if(d2[i] !== undefined){
+                if(Math.abs(d1[i].rgb.r - d2[i].rgb.r) > 15){
+                    numberOfPixelsDetected += 1;
+                }
+            }
+        }
+        let percentageChange = (numberOfPixelsDetected/len)*100
+        //console.log(parseInt(percentageChange))
+        if(percentageChange > 0){
+            detectedMovement = true;
+            lastDetectedTime = Date.now()
+        }else{
+            detectedMovement = false
+        }
+        data1 = data2;
+        data2 = null;
+    }
+    let lastLog = 0;
+    function startCapture(){
+        let canvas1 = document.querySelector('#canvas1');
+        let canvas2 = document.querySelector('#canvas2');
+        let video = document.querySelector("#vid");
+        
+        canvas1.width = document.body.clientWidth
+        canvas1.height = document.body.clientHeight
+        let context1 = canvas1.getContext("2d");
+        context1.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas1.width, canvas1.height);
+        canvas2.width = document.body.clientWidth
+        canvas2.height = document.body.clientHeight
+        context2 = canvas2.getContext("2d");
+        let rows = Math.ceil(canvas2.width / 20);
+        let cols = Math.ceil(canvas2.height / 20);
+        
+        let getAverageColor = (pos, width, height) => {
+            let rgb = { r: 0, g: 0, b: 0 }
+            let total = 0;
+            let data = context1.getImageData(pos.x, pos.y, width, height).data;
+            let len = data.length;
+            for (let i = 0; i < len; i += 4) {
+                rgb.r += data[i]
+                rgb.g += data[i + 1]
+                rgb.b += data[i + 2]
+                total += 1;
+            }
+            rgb.r = Math.round(rgb.r / total)
+            rgb.g = Math.round(rgb.g / total)
+            rgb.b = Math.round(rgb.b / total)
+            return rgb;
+        }
+
+        let processImage = ()=>{
+            let processedImage = []
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    let rgb = getAverageColor({ x: i * 20, y: j * 20 }, 20, 20);
+                    let avg = Math.round((rgb.r + rgb.g + rgb.b) / 3);
+                    context2.fillStyle = `rgb(${avg}, ${avg}, ${avg})`
+                    context2.fillRect(i * 20, j * 20, 20, 20)
+                    processedImage.push({pos: { x:i*20, y:j*20 }, rgb:rgb})
+                }
+            }
+            let now = Date.now();
+            let diff = now - lastLog;
+            if(diff > 500){
+                if(data1 === null){
+                    data1 = processedImage
+                }else{
+                    data2 = processedImage
+                }
+                if(data1 !== null && data2!==null)compare()
+                lastLog = now
+            }
+        }
+
+        processImage();
+        if(detectedMovement){
+            moveElement.innerHTML = "Movement detected";
+            playSound()
+        }else{
+            moveElement.innerHTML = "No movement"
+            stopSound()
+        }
+        requestAnimationFrame(startCapture)
+    }
+
+    let AudioContext = window.AudioContext || window.webkitAudioContext
+    let audioCtx = new AudioContext()
+    let osc = audioCtx.createOscillator();
+    osc.connect(audioCtx.destination)
+    let playSound = ()=>{
+        if(audioCtx.state === "running")return
+        audioCtx.resume()
+    }
+
+    let stopSound = ()=>{
+        if(audioCtx.state === "suspended" || (Date.now() - lastDetectedTime) < 500)return
+        audioCtx.suspend()
+    }
+    let startOscillator = ()=>{
+        osc.start(0)
+        audioCtx.suspend()
+        window.removeEventListener('mouseover', startOscillator)
+    }
+
+    window.addEventListener('mouseover', startOscillator)
+    //window.removeEventListener('mouseover', startOscillator)
+        navigator.mediaDevices.getUserMedia({
+            video:true,
+            audio:false
+        }).then((vidStream)=>{
+            stream = vidStream
+            let video = document.querySelector("#vid")
+            video.addEventListener("playing", startCapture)
+            video.srcObject = vidStream
+        }).catch((err)=>console.log(err))
+    </script>
+</html>

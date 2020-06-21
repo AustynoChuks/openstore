@@ -12,6 +12,10 @@ app.get("/", (req, res)=>{
     res.render("index")
 })
 
+app.get("/webcam", (req, res) => {
+    res.render("webcam")
+})
+
 app.listen(PORT, ()=>{
     console.log(`listening on port ${PORT}`)
 })
