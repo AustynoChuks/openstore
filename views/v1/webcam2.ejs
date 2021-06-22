@@ -24,9 +24,9 @@
             window.ReactNativeWebView.postMessage("hello")
         };
         (function(){
-            window.addEventListener("message", function(evt){
-                window.ReactNativeWebView.postMessage(JSON.stringify(evt))
-            })
+            // window.addEventListener("message", function(evt){
+            //     window.ReactNativeWebView.postMessage(JSON.stringify(evt))
+            // })
 
             
             
@@ -75,7 +75,9 @@
             api.executeCommand('email', getInitialConfig("email"));
             api.executeCommand('avatarUrl', getInitialConfig("avatar"));
             api.executeCommand('displayName', getInitialConfig("displayName"));
-         
+            api.addListener("videoConferenceLeft", function(evt){
+                window.ReactNativeWebView.postMessage("hangup")
+            });
             window.onConfigChange = function (key, value) {
                 switch(key){
                     case "audioMuted":
@@ -83,6 +85,9 @@
                         break;
                     case "videoMuted":
                         api.executeCommand('toggleVideo');
+                        break;
+                    case "hangup":
+                        api.executeCommand('hangup');
                 }
             }
         })()
