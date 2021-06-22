@@ -1,0 +1,90 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            html, body{
+                margin: 0px;
+                padding: 0px;
+                box-sizing: border-box;
+            }
+        </style>
+    </head>
+    <body class="mobile-browser">
+        <div id="frame">
+
+        </div>
+    </body>
+    <script type="text/javascript" src="https://meet.eclathealthcare.com/external_api.js"></script>
+    <script type="text/javascript" src="https://meet.eclathealthcare.com/config.js"></script>
+    <script type="text/javascript" src="https://meet.eclathealthcare.com/interface_config.js"></script>
+    <script type="text/javascript">
+        function postM(e){
+            e.preventDefault()
+            window.ReactNativeWebView.postMessage("hello")
+        };
+        (function(){
+            window.addEventListener("message", function(evt){
+                window.ReactNativeWebView.postMessage(JSON.stringify(evt))
+            })
+
+            
+            
+            function getInitialConfig(key){
+                const s = window.location.search;
+                const params = s.replace(/^\?/, '').split('&');
+                if(Array.isArray(params) && params[0] === "")return undefined;
+                let i = 0;
+                const l = params.length;
+                while(i < l){
+                    const str = params[i].split(/\=/);
+                    if(str[0] === key){
+
+                        if(str[1] === "true") return true
+                        if (str[1] === "false") return false
+                        return str[1];
+                    }
+                    i++
+                }
+                return undefined
+            }
+
+            const domain = "meet.eclathealthcare.com";
+            const audioMuted = getInitialConfig("audioMuted") || true;
+            const videoMuted = getInitialConfig("videoMuted") || false;
+            const roomName = getInitialConfig("roomName") || "ISW_TM_1400072";
+            const configOverwrite =  {
+                startWithAudioMuted: audioMuted,
+                startWithVideoMuted: videoMuted
+            }
+
+            const options = {
+                roomName,
+                width:"100%",
+                height:"100%",
+                parentNode:document.querySelector("#frame"),
+                configOverwrite,
+                
+                interfaceConfigOverwrite:{
+                    TOOLBAR_ALWAYS_VISIBLE:false,
+                }
+            }
+            
+            const api = new JitsiMeetExternalAPI(domain, options)
+            api.executeCommand('toggleFilmStrip');
+            api.executeCommand('email', getInitialConfig("email"));
+            api.executeCommand('avatarUrl', getInitialConfig("avatar"));
+            api.executeCommand('displayName', getInitialConfig("displayName"));
+         
+            window.onConfigChange = function (key, value) {
+                switch(key){
+                    case "audioMuted":
+                        api.executeCommand('toggleAudio');
+                        break;
+                    case "videoMuted":
+                        api.executeCommand('toggleVideo');
+                }
+            }
+        })()
+    </script>
+</html>

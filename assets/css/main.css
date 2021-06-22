@@ -99,7 +99,7 @@
 .nav-category .nav-category-item > ul > li > a:hover{
     color: #FDA52B;
     z-index: +2;
-    box-shadow: 0 0 10px #333;
+    /* box-shadow: 0 0 10px #333; */
 }
 .content-container{
     display: flex;

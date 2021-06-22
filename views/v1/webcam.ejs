@@ -18,6 +18,7 @@
         
     </body>
     <script type="text/javascript">
+    
     var stream = null;
     var detectedMovement = false;
     lastDetectedTime = 0;
@@ -48,9 +49,10 @@
                 }
             }
         }
+
         let percentageChange = (numberOfPixelsDetected/len)*100
         //console.log(parseInt(percentageChange))
-        if(percentageChange > 0){
+        if(percentageChange > 3){
             detectedMovement = true;
             lastDetectedTime = Date.now()
         }else{
@@ -148,6 +150,7 @@
 
     window.addEventListener('mouseover', startOscillator)
     //window.removeEventListener('mouseover', startOscillator)
+        
         navigator.mediaDevices.getUserMedia({
             video:true,
             audio:false
@@ -156,6 +159,9 @@
             let video = document.querySelector("#vid")
             video.addEventListener("playing", startCapture)
             video.srcObject = vidStream
-        }).catch((err)=>console.log(err))
+            alert("Accessed camera successfully")
+        }).catch((err)=>{
+            alert("Cannot access camera")
+        })
     </script>
 </html>
