@@ -16,6 +16,9 @@ app.get("/webcam", (req, res) => {
     res.render("webcam2");
 })
 
+app.get("/reco", (req, res) => {
+    res.render("webcam");
+})
 app.get("/canvas", (req, res) => {
     res.render("canvas");
 })
