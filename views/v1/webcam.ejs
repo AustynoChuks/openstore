@@ -52,7 +52,7 @@
 
         let percentageChange = (numberOfPixelsDetected/len)*100
         //console.log(parseInt(percentageChange))
-        if(percentageChange > 3){
+        if(percentageChange > 10){
             detectedMovement = true;
             lastDetectedTime = Date.now()
         }else{
